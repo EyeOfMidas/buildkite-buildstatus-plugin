@@ -12,11 +12,15 @@
 }
 
 .project-status.success {
-    background-color: green
+    background-color: green;
+    background: url("/images/success.svg");
+    background-size: 16px 16px, cover;
 }
 
 .project-status.failure {
-    background-color: green
+    background-color: red;
+    background: url("/images/failure.svg");
+    background-size: 16px 16px, cover;
 }
 
 .project-activity {
@@ -26,11 +30,11 @@
 }
 
 .project-activity.building {
-    background-color: yellow
+    background-color: yellow;
 }
 
 .project-activity.sleeping {
-    background-color: gray
+    background-color: transparent;
 }
 
 .project-name {
