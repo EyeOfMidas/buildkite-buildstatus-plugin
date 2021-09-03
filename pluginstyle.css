@@ -1,0 +1,43 @@
+.buildkite-project {
+    border: 1px solid black;
+    margin: 4px;
+    padding: 4px;
+    border-radius: 6px;
+}
+
+.project-status {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+}
+
+.project-status.success {
+    background-color: green
+}
+
+.project-status.failure {
+    background-color: green
+}
+
+.project-activity {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+}
+
+.project-activity.building {
+    background-color: yellow
+}
+
+.project-activity.sleeping {
+    background-color: gray
+}
+
+.project-name {
+    display: inline;
+    color: black;
+}
+
+.error {
+    color: red;
+}

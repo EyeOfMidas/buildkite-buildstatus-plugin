@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="pluginstyle.css">
+  </head>
+  <body>
+    <h1>Buildkite Build Status Plugin</h1>
+    <h2>Set API Access Token</h2>
+    <p>To allow Buildkite read access to your pipelines you will need to create an API Access Token with the proper permissions and put it here.</p>
+    <label for="buildkite-api-access-token">API Access Token</label><input type="text" id="buildkite-api-access-token" name="buildkite-api-access-token" value="" />
+    <a href="#" id="show-access-token-help">I'm not sure how to do this</a>
+    <div id="access-token-help" style="display: none">
+      <p>To generate a Buildkite API Access token, first navigate to <a href="https://buildkite.com/user/api-access-tokens">https://buildkite.com/user/api-access-tokens</a>.</p>      
+      <p>Click the New API Access Token in the top left <img src="/images/access_token_screen1.png" />.</p>
+      <p>TBD - REST Scopes: read_artifacts, read_builds, read_organizations, read_pipelines</p>
+    </div>
+    <h2>Subscribe to Pipeline Builds</h2>
+    <p>Please input your organization's slug</p>
+    <input type="text" id="buildkite-organization-slug" name="buildkite-organization-slug" value="" />
+    <div id="buildkite-pipelines"></div>
+
+    <h2>Polling Schedule</h2>
+    <p>How often should this plugin poll the buildkite server for changes?</p>
+    Every: <select id="poll-delay-in-minutes">
+      <option value="1">1 minute</option>
+      <option value="5">5 minute</option>
+      <option value="10">10 minute</option>
+      <option value="15">15 minute</option>
+      <option value="30">30 minute</option>
+    </select>
+
+    <h2>Polling Enabled</h2>
+    <p>If you wish to stop the automated polling, uncheck this box</p>
+    <label for="polling-enabled">Polling Enabled</label><input type="checkbox" id="polling-enabled" name="polling-enabled">
+
+    <h2>Debug</h2>
+    <p>This section is for developer debugging actions. Don't click here unless you know what you're doing</p>
+    <button id="debug">Debug</button>
+
+    <script src="options.js"></script>
+  </body>
+</html>
