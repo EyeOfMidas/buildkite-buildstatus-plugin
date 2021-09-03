@@ -28,11 +28,15 @@ async function rebuildProjectList(organizationSlug, projects) {
     statusDiv.classList.add("project-status")
     statusDiv.classList.add(`${lastBuildStatus.toLowerCase()}`)
 
-    let projectNameElement = document.createElement("a")
-    projectNameElement.href = `https://buildkite.com/${organizationSlug}/${projectName}`
-    projectNameElement.target = "_blank"
+    let projectNameElement = document.createElement("div")
     projectNameElement.classList.add("project-name")
-    projectNameElement.innerText = projectName
+
+    let projectNameLink = document.createElement("a")
+    projectNameLink.href = `https://buildkite.com/${organizationSlug}/${projectName}`
+    projectNameLink.target = "_blank"
+    projectNameLink.innerText = projectName
+
+    projectNameElement.appendChild(projectNameLink)
 
     let activityDiv = document.createElement("div")
     activityDiv.classList.add("project-activity")
