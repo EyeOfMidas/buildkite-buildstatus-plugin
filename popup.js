@@ -2,18 +2,18 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
   chrome.storage.sync.get(null, (data) => {
     if(changes.hasOwnProperty(`${data.buildkiteOrganizationSlug}-projectData`)) {
       let projectData = changes[`${data.buildkiteOrganizationSlug}-projectData`].newValue
-      rebuildProjectList(projectData)
+      rebuildProjectList(data.buildkiteOrganizationSlug, projectData)
     }
   })
 })
 
 chrome.storage.sync.get(null, (data) => {
   let projectData = data[`${data.buildkiteOrganizationSlug}-projectData`]
-  rebuildProjectList(projectData)
+  rebuildProjectList(data.buildkiteOrganizationSlug, projectData)
 })
 
 
-async function rebuildProjectList(projects) {
+async function rebuildProjectList(organizationSlug, projects) {
   let pipelinesContainer = document.getElementById("buildkite-pipelines-display")
   for(let i = 0; i < projects.length; i++) {
     let project = projects[i]
@@ -28,7 +28,9 @@ async function rebuildProjectList(projects) {
     statusDiv.classList.add("project-status")
     statusDiv.classList.add(`${lastBuildStatus.toLowerCase()}`)
 
-    let projectNameElement = document.createElement("p")
+    let projectNameElement = document.createElement("a")
+    projectNameElement.href = `https://buildkite.com/${organizationSlug}/${projectName}`
+    projectNameElement.target = "_blank"
     projectNameElement.classList.add("project-name")
     projectNameElement.innerText = projectName
 
