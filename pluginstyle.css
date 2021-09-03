@@ -3,6 +3,8 @@
     margin: 4px;
     padding: 4px;
     border-radius: 6px;
+    white-space: nowrap;
+    font-size: 14px;
 }
 
 .project-status {
@@ -40,6 +42,7 @@
 .project-name {
     display: inline;
     color: black;
+    margin: 4px;
 }
 
 .error {
