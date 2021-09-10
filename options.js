@@ -23,17 +23,16 @@ function constructOptions(buttonColors) {
   let apiTokenInput = document.getElementById("buildkite-api-access-token")
   apiTokenInput.addEventListener("blur", apiTokenChange)
   chrome.storage.sync.get("buildkiteApiAccessToken", ({buildkiteApiAccessToken}) => {
-    apiTokenInput.value = buildkiteApiAccessToken
+    apiTokenInput.value = buildkiteApiAccessToken ?? ""
   })
   let accessTokenHelp = document.getElementById("show-access-token-help")
   accessTokenHelp.addEventListener("click", toggleAccessTokenHelp)
   let organizationSlugInput = document.getElementById("buildkite-organization-slug")
   organizationSlugInput.addEventListener("blur", organizationSlugChange)
   chrome.storage.sync.get("buildkiteOrganizationSlug", ({buildkiteOrganizationSlug}) => {
-    organizationSlugInput.value = buildkiteOrganizationSlug
+    organizationSlugInput.value = buildkiteOrganizationSlug ?? ""
   })
 
-  
   chrome.storage.sync.get(null, (data) => {
     let organizationSlug = data.buildkiteOrganizationSlug
     let apiAccessToken = data.buildkiteApiAccessToken
@@ -67,20 +66,7 @@ async function rebuildProjectList(organizationSlug, apiAccessToken) {
   pipelinesContainer.appendChild(urlElement)
 
   let projects = await getProjects(organizationSlug, apiAccessToken)
-  // let response = await fetch(`${url}?access_token=${apiAccessToken}`)
-  // if(!response.ok) {
-  //   let jsonResponse = await response.json()
-  //   let errorMessage = document.createElement("p")
-  //   errorMessage.classList.add("error")
-  //   let message = `${response.status}: ${jsonResponse.message}`
-  //   errorMessage.innerText = message
-  //   pipelinesContainer.appendChild(errorMessage)
-  //   return
-  // }
-  // let xmlText = await response.text()
-  // let data = (new window.DOMParser()).parseFromString(xmlText, "text/xml")
-  // let projectsElements = data.getElementsByTagName("Project")
-  // for(let i = 0; i < projectsElements.length; i++) {
+
   for(let i = 0; i < projects.length; i++) {
     let project = projects[i]
     let projectRow = document.createElement("div")
@@ -119,6 +105,9 @@ async function rebuildProjectList(organizationSlug, apiAccessToken) {
 }
 
 async function getProjects(organizationSlug, apiAccessToken) {
+  if(!apiAccessToken) {
+    return
+  }
   let response = await fetch(`https://cc.buildkite.com/${organizationSlug}.xml?access_token=${apiAccessToken}`)
   if(!response.ok) {
     let jsonResponse = await response.json()
@@ -199,6 +188,5 @@ function pollEnabledChange(event) {
 function debugTrigger() {
   chrome.notifications.create({type:"basic", iconUrl:"images/get_started48.png", title:"Title thing", message:"This is a message"})
 }
-
 
 constructOptions(presetButtonColors)

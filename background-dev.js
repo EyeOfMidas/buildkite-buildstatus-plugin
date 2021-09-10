@@ -27,6 +27,9 @@ chrome.alarms.onAlarm.addListener(() => {
 
 function tick() {
   chrome.storage.sync.get(null, (data) => {
+    if(!data.buildkiteApiAccessToken) {
+      return
+    }
     getProjects(data.buildkiteOrganizationSlug, data.buildkiteApiAccessToken).then((projects) => {      
       let filteredProjects = projects.filter(project => {
         return data.projectList.find(name => name == project.name)
