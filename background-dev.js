@@ -73,7 +73,7 @@ async function getProjects(organizationSlug, apiAccessToken) {
 function getProjectData(projectElement) {
   let project = {}
   project['name'] = projectElement.getAttribute("name")
-  project['lastBuildStatus'] = projectElement.getAttribute("lastBuildStatus")
+  project['lastBuildStatus'] = projectElement.getAttribute("lastBuildStatus") ?? "undetermined"
   project['activity'] = projectElement.getAttribute("activity")
   project['lastBuildTime'] = projectElement.getAttribute("lastBuildTime")
   return project

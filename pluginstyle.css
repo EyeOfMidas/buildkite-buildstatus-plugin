@@ -33,6 +33,11 @@
     background-size: 20px 20px, cover;
 }
 
+.project-status.undetermined {
+    background: url("/images/undetermined.svg");
+    background-size: 20px 20px, cover;
+}
+
 .project-activity {
     display: flex;
     width: 20px;

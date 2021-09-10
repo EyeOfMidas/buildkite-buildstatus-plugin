@@ -65,27 +65,30 @@ async function rebuildProjectList(organizationSlug, apiAccessToken) {
   let urlElement = document.createElement("p")
   urlElement.innerText = url
   pipelinesContainer.appendChild(urlElement)
-  let response = await fetch(`${url}?access_token=${apiAccessToken}`)
-  if(!response.ok) {
-    let jsonResponse = await response.json()
-    let errorMessage = document.createElement("p")
-    errorMessage.classList.add("error")
-    let message = `${response.status}: ${jsonResponse.message}`
-    errorMessage.innerText = message
-    pipelinesContainer.appendChild(errorMessage)
-    return
-  }
-  let xmlText = await response.text()
-  let data = (new window.DOMParser()).parseFromString(xmlText, "text/xml")
-  let projectsElements = data.getElementsByTagName("Project")
-  for(let i = 0; i < projectsElements.length; i++) {
-    let project = projectsElements[i]
+
+  let projects = await getProjects(organizationSlug, apiAccessToken)
+  // let response = await fetch(`${url}?access_token=${apiAccessToken}`)
+  // if(!response.ok) {
+  //   let jsonResponse = await response.json()
+  //   let errorMessage = document.createElement("p")
+  //   errorMessage.classList.add("error")
+  //   let message = `${response.status}: ${jsonResponse.message}`
+  //   errorMessage.innerText = message
+  //   pipelinesContainer.appendChild(errorMessage)
+  //   return
+  // }
+  // let xmlText = await response.text()
+  // let data = (new window.DOMParser()).parseFromString(xmlText, "text/xml")
+  // let projectsElements = data.getElementsByTagName("Project")
+  // for(let i = 0; i < projectsElements.length; i++) {
+  for(let i = 0; i < projects.length; i++) {
+    let project = projects[i]
     let projectRow = document.createElement("div")
     projectRow.classList.add("buildkite-project")
-    let projectName = project.getAttribute("name")
-    let lastBuildStatus = project.getAttribute("lastBuildStatus")
-    let activity = project.getAttribute("activity")
-    let lastBuildTime = project.getAttribute("lastBuildTime")
+    let projectName = project["name"]
+    let lastBuildStatus = project["lastBuildStatus"]
+    let activity = project["activity"]
+    let lastBuildTime = project["lastBuildTime"]
 
     let enabledCheckbox = document.createElement("input")
     enabledCheckbox.type = "checkbox"
@@ -113,6 +116,32 @@ async function rebuildProjectList(organizationSlug, apiAccessToken) {
 
     pipelinesContainer.appendChild(projectRow)
   }
+}
+
+async function getProjects(organizationSlug, apiAccessToken) {
+  let response = await fetch(`https://cc.buildkite.com/${organizationSlug}.xml?access_token=${apiAccessToken}`)
+  if(!response.ok) {
+    let jsonResponse = await response.json()
+    throw new Error(`${response.status}: ${jsonResponse.message}`)
+  }
+  let xmlText = await response.text()
+  let data = new DOMParser().parseFromString(xmlText, "text/xml")
+  let projectsElements = data.getElementsByTagName("Project")
+  let projectData = []
+  for(let i = 0; i < projectsElements.length; i++) {
+    let projectElement = projectsElements[i]
+    projectData.push(getProjectData(projectElement))
+  }
+  return projectData
+}
+
+function getProjectData(projectElement) {
+  let project = {}
+  project['name'] = projectElement.getAttribute("name")
+  project['lastBuildStatus'] = projectElement.getAttribute("lastBuildStatus") ?? "undetermined"
+  project['activity'] = projectElement.getAttribute("activity")
+  project['lastBuildTime'] = projectElement.getAttribute("lastBuildTime")
+  return project
 }
 
 function apiTokenChange(event) {
