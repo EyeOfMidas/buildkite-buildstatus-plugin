@@ -30,7 +30,7 @@ function tick() {
     if(!data.buildkiteApiAccessToken) {
       return
     }
-    getProjects(data.buildkiteOrganizationSlug, data.buildkiteApiAccessToken).then((projects) => {      
+    getProjects(data.buildkiteOrganizationSlug, data.buildkiteApiAccessToken, data.buildkitePipelineBranch).then((projects) => {      
       let filteredProjects = projects.filter(project => {
         return data.projectList.find(name => name == project.name)
       })
@@ -56,8 +56,12 @@ function tick() {
   })
 }
 
-async function getProjects(organizationSlug, apiAccessToken) {
-  let response = await fetch(`https://cc.buildkite.com/${organizationSlug}.xml?access_token=${apiAccessToken}`)
+async function getProjects(organizationSlug, apiAccessToken, pipelineBranch) {
+  let url = `https://cc.buildkite.com/${organizationSlug}.xml?access_token=${apiAccessToken}`
+  if(pipelineBranch) {
+    url += `&branch=${pipelineBranch}`
+  }
+  let response = await fetch(url)
   if(!response.ok) {
     let jsonResponse = await response.json()
     throw new Error(`${response.status}: ${jsonResponse.message}`)

@@ -33,10 +33,17 @@ function constructOptions(buttonColors) {
     organizationSlugInput.value = buildkiteOrganizationSlug ?? ""
   })
 
+  let pipelineBranchInput = document.getElementById("buildkite-pipeline-branch")
+  pipelineBranchInput.addEventListener("blur", pipelineBranchChange)
+  chrome.storage.sync.get("buildkitePipelineBranch", ({buildkitePipelineBranch}) => {
+    pipelineBranchInput.value = buildkitePipelineBranch ?? ""
+  })
+
   chrome.storage.sync.get(null, (data) => {
     let organizationSlug = data.buildkiteOrganizationSlug
     let apiAccessToken = data.buildkiteApiAccessToken
-    rebuildProjectList(organizationSlug, apiAccessToken)
+    let pipelineBranch = data.buildkitePipelineBranch
+    rebuildProjectList(organizationSlug, apiAccessToken, pipelineBranch)
   })
 
   let pollDelayInput = document.getElementById("poll-delay-in-minutes")
@@ -57,15 +64,18 @@ function constructOptions(buttonColors) {
   debugButton.addEventListener("click", debugTrigger)
 }
 
-async function rebuildProjectList(organizationSlug, apiAccessToken) {
+async function rebuildProjectList(organizationSlug, apiAccessToken, pipelineBranch) {
   let pipelinesContainer = document.getElementById("buildkite-pipelines")
   pipelinesContainer.innerHTML = ""
   let url = `https://cc.buildkite.com/${organizationSlug}.xml`
+  if(pipelineBranch) {
+    url += `&branch=${pipelineBranch}`
+  }
   let urlElement = document.createElement("p")
   urlElement.innerText = url
   pipelinesContainer.appendChild(urlElement)
 
-  let projects = await getProjects(organizationSlug, apiAccessToken)
+  let projects = await getProjects(organizationSlug, apiAccessToken, pipelineBranch)
 
   for(let i = 0; i < projects.length; i++) {
     let project = projects[i]
@@ -104,11 +114,15 @@ async function rebuildProjectList(organizationSlug, apiAccessToken) {
   }
 }
 
-async function getProjects(organizationSlug, apiAccessToken) {
+async function getProjects(organizationSlug, apiAccessToken, pipelineBranch) {
   if(!apiAccessToken) {
     return
   }
-  let response = await fetch(`https://cc.buildkite.com/${organizationSlug}.xml?access_token=${apiAccessToken}`)
+  let url = `https://cc.buildkite.com/${organizationSlug}.xml?access_token=${apiAccessToken}`
+  if(pipelineBranch) {
+    url += `&branch=${pipelineBranch}`
+  }
+  let response = await fetch(url)
   if(!response.ok) {
     let jsonResponse = await response.json()
     throw new Error(`${response.status}: ${jsonResponse.message}`)
@@ -146,8 +160,16 @@ function toggleAccessTokenHelp() {
 function organizationSlugChange(event) {
   let buildkiteOrganizationSlug = event.target.value
   chrome.storage.sync.set({buildkiteOrganizationSlug})
-  chrome.storage.sync.get("buildkiteApiAccessToken", ({buildkiteApiAccessToken}) => {
-    rebuildProjectList(buildkiteOrganizationSlug, buildkiteApiAccessToken)
+  chrome.storage.sync.get(null, (data) => {
+    rebuildProjectList(buildkiteOrganizationSlug, data.buildkiteApiAccessToken, data.buildkitePipelineBranch)
+  })
+}
+
+function pipelineBranchChange(event) {
+  let buildkitePipelineBranch = event.target.value
+  chrome.storage.sync.set({buildkitePipelineBranch})
+  chrome.storage.sync.get(null, (data) => {
+    rebuildProjectList(data.buildkiteOrganizationSlug, data.buildkiteApiAccessToken, buildkitePipelineBranch)
   })
 }
 

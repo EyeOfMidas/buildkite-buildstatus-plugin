@@ -7,7 +7,7 @@
     <h1>Buildkite Build Status Plugin</h1>
     <h2>Set API Access Token</h2>
     <p>To allow Buildkite read access to your pipelines you will need to create an API Access Token with the proper permissions and put it here.</p>
-    <label for="buildkite-api-access-token">API Access Token</label><input type="text" id="buildkite-api-access-token" name="buildkite-api-access-token" value="" />
+    <label for="buildkite-api-access-token">API Access Token:</label> <input type="text" id="buildkite-api-access-token" name="buildkite-api-access-token" value="" />
     <a href="#" id="show-access-token-help">I'm not sure how to do this</a>
     <div id="access-token-help" style="display: none">
       <p>To generate a Buildkite API Access token, first navigate to <a href="https://buildkite.com/user/api-access-tokens">https://buildkite.com/user/api-access-tokens</a>.</p>      
@@ -16,8 +16,11 @@
     </div>
     <h2>Subscribe to Pipeline Builds</h2>
     <p>Please input your organization's slug</p>
-    <input type="text" id="buildkite-organization-slug" name="buildkite-organization-slug" value="" />
+    <label for="buildkite-organization-slug">Organization Slug:</label> <input type="text" id="buildkite-organization-slug" name="buildkite-organization-slug" value="" />
+    <p>If you would like to filter builds by branch, please enter in the branch name here. By default it will not filter by branch, and the last build across any branch is what's shown.</p>
+    <label for="buildkite-pipeline-branch">Pipeline Branch:</label> <input type="text" id="buildkite-pipeline-branch" name="buildkite-pipeline-branch" value="" />
     <div id="buildkite-pipelines"></div>
+    
 
     <h2>Polling Schedule</h2>
     <p>How often should this plugin poll the buildkite server for changes?</p>
