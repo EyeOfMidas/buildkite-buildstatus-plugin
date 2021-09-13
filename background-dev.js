@@ -18,6 +18,10 @@ chrome.storage.onChanged.addListener(function (changes, namespace) {
         chrome.alarms.create("buildkite-polling", { periodInMinutes:changes['delayInMinutes'].newValue })
       }
     }
+
+    if(changes.hasOwnProperty("projectList")) {
+      tick()
+    }
   })
 });
 
@@ -30,19 +34,15 @@ function tick() {
     if(!data.buildkiteApiAccessToken) {
       return
     }
-    getProjects(data.buildkiteOrganizationSlug, data.buildkiteApiAccessToken, data.buildkitePipelineBranch).then((projects) => {      
-      let filteredProjects = projects.filter(project => {
-        return data.projectList.find(name => name == project.name)
-      })
-
-      chrome.storage.sync.get(`${data.buildkiteOrganizationSlug}-projectData`, ({projectData}) => {
+    getProjects(data.projectList, data.buildkiteApiAccessToken).then((projects) => {
+      chrome.storage.sync.get(`projectData`, ({projectData}) => {
         let previousProjectData = projectData ?? []
         let setDataObj = {}
-        setDataObj[`${data.buildkiteOrganizationSlug}-projectData`] = filteredProjects
+        setDataObj[`projectData`] = projects
         chrome.storage.sync.set(setDataObj)
 
-        let changed = filteredProjects.filter(project => {
-          let previousProject = previousProjectData.find(prevProject => project.name == prevProject)
+        let changed = projects.filter(project => {
+          let previousProject = previousProjectData.find(prevProject => prevProject.name == projectData.name)
           if(!previousProject) {
             return false
           }
@@ -56,33 +56,42 @@ function tick() {
   })
 }
 
-async function getProjects(organizationSlug, apiAccessToken, pipelineBranch) {
-  let url = `https://cc.buildkite.com/${organizationSlug}.xml?access_token=${apiAccessToken}`
-  if(pipelineBranch) {
-    url += `&branch=${pipelineBranch}`
-  }
-  let response = await fetch(url)
-  if(!response.ok) {
-    let jsonResponse = await response.json()
-    throw new Error(`${response.status}: ${jsonResponse.message}`)
-  }
-  let xmlText = await response.text()
-  let data = new DOMParser().parseFromString(xmlText, "text/xml")
-  let projectsElements = data.getElementsByTagName("Project")
+async function getProjects(projectList, apiAccessToken) {
   let projectData = []
-  for(let i = 0; i < projectsElements.length; i++) {
-    let projectElement = projectsElements[i]
-    projectData.push(getProjectData(projectElement))
+  if(!projectList) {
+    return projectData
+  }
+  for(let i = 0; i < projectList.length; i++) {
+    let project = projectList[i]
+    let url = `${project.url}&access_token=${apiAccessToken}`
+  
+    let response = await fetch(url)
+    if(!response.ok) {
+      let jsonResponse = await response.json()
+      throw new Error(`${response.status}: ${jsonResponse.message}`)
+    }
+    let xmlText = await response.text()
+    let data = new DOMParser().parseFromString(xmlText, "text/xml")
+    let projectsElements = data.getElementsByTagName("Project")
+    for(let i = 0; i < projectsElements.length; i++) {
+      let projectElement = projectsElements[i]
+      let prjData = getProjectData(projectElement, project.organizationSlug, project.branch)
+      projectData.push(prjData)
+    }
   }
   return projectData
 }
 
-function getProjectData(projectElement) {
+function getProjectData(projectElement, organizationSlug, pipelineBranch) {
   let project = {}
   project['name'] = projectElement.getAttribute("name")
+  project['pipelineSlug'] = projectElement.getAttribute("name").replace(` (${pipelineBranch})`, '')
+  project['organizationSlug'] = organizationSlug
+  project['branch'] = pipelineBranch
   project['lastBuildStatus'] = projectElement.getAttribute("lastBuildStatus") ?? "undetermined"
   project['activity'] = projectElement.getAttribute("activity")
   project['lastBuildTime'] = projectElement.getAttribute("lastBuildTime")
+  project['url'] = `https://cc.buildkite.com/${organizationSlug}/${project.pipelineSlug}.xml?branch=${pipelineBranch}`
   project['webUrl'] = projectElement.getAttribute("webUrl")
   return project
 }

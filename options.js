@@ -72,7 +72,7 @@ async function rebuildProjectList(organizationSlug, apiAccessToken, pipelineBran
   pipelinesContainer.innerHTML = ""
   let url = `https://cc.buildkite.com/${organizationSlug}.xml`
   if(pipelineBranch) {
-    url += `&branch=${pipelineBranch}`
+    url += `?branch=${pipelineBranch}`
   }
   let urlElement = document.createElement("p")
   urlElement.innerText = url
@@ -87,14 +87,13 @@ async function rebuildProjectList(organizationSlug, apiAccessToken, pipelineBran
     let projectName = project["name"]
     let lastBuildStatus = project["lastBuildStatus"]
     let activity = project["activity"]
-    let lastBuildTime = project["lastBuildTime"]
 
     let enabledCheckbox = document.createElement("input")
     enabledCheckbox.type = "checkbox"
-    isProjectEnabled(projectName, (result) => {
+    isProjectEnabled(project, (result) => {
       enabledCheckbox.checked = result
     })
-    enabledCheckbox.addEventListener("change", (event) => { projectCheckboxChange(event, organizationSlug, projectName)})
+    enabledCheckbox.addEventListener("change", (event) => { projectCheckboxChange(event, project)})
 
     let statusDiv = document.createElement("div")
     statusDiv.classList.add("project-status")
@@ -119,12 +118,9 @@ async function rebuildProjectList(organizationSlug, apiAccessToken, pipelineBran
 
 async function getProjects(organizationSlug, apiAccessToken, pipelineBranch) {
   if(!apiAccessToken) {
-    return
+    return []
   }
   let url = `https://cc.buildkite.com/${organizationSlug}.xml?access_token=${apiAccessToken}`
-  if(pipelineBranch) {
-    url += `&branch=${pipelineBranch}`
-  }
   let response = await fetch(url)
   if(!response.ok) {
     let jsonResponse = await response.json()
@@ -136,17 +132,26 @@ async function getProjects(organizationSlug, apiAccessToken, pipelineBranch) {
   let projectData = []
   for(let i = 0; i < projectsElements.length; i++) {
     let projectElement = projectsElements[i]
-    projectData.push(getProjectData(projectElement))
+    let project = getProjectData(projectElement, organizationSlug, pipelineBranch)
+    projectData.push(project)
   }
   return projectData
 }
 
-function getProjectData(projectElement) {
+function getProjectData(projectElement, organizationSlug, pipelineBranch) {
   let project = {}
-  project['name'] = projectElement.getAttribute("name")
+  let branchText = ""
+  if(pipelineBranch) {
+    branchText = ` (${pipelineBranch})`
+  }
+  project['name'] = `${projectElement.getAttribute("name")}${branchText}`
+  project['pipelineSlug'] = projectElement.getAttribute("name").replace(` (${pipelineBranch})`, '')
+  project['organizationSlug'] = organizationSlug
+  project['branch'] = pipelineBranch
   project['lastBuildStatus'] = projectElement.getAttribute("lastBuildStatus") ?? "undetermined"
   project['activity'] = projectElement.getAttribute("activity")
   project['lastBuildTime'] = projectElement.getAttribute("lastBuildTime")
+  project['url'] = `https://cc.buildkite.com/${organizationSlug}/${project.pipelineSlug}.xml?branch=${pipelineBranch}`
   project['webUrl'] = projectElement.getAttribute("webUrl")
   return project
 }
@@ -177,25 +182,24 @@ function pipelineBranchChange(event) {
   })
 }
 
-function isProjectEnabled(projectName, resultHandler) {
+function isProjectEnabled(project, resultHandler) {
   chrome.storage.sync.get("projectList", ({projectList}) => {
     if(!projectList) {
       projectList = []
     }
-    resultHandler(projectList.filter(name => name == projectName ).length > 0)
+    resultHandler(projectList.filter(prj => prj.name == project.name ).length > 0)
   })
 }
 
-function projectCheckboxChange(event, organizationSlug, projectName) {
+function projectCheckboxChange(event, project) {
   let isProjectEnabled = event.target.checked == true
   chrome.storage.sync.get("projectList", ({projectList}) => {
     if(!projectList) {
       projectList = []
     }
+    projectList = projectList.filter(prj => { return prj.name != project.name})
     if(isProjectEnabled) {
-      projectList.push(projectName)
-    } else {
-      projectList = projectList.filter(name => { return name != projectName})
+      projectList.push(project)
     }
     chrome.storage.sync.set({projectList})
   })
