@@ -216,7 +216,7 @@ function pollEnabledChange(event) {
 }
 
 function debugTrigger() {
-  chrome.notifications.create({type:"basic", iconUrl:"images/get_started48.png", title:"Title thing", message:"This is a message"})
+  chrome.notifications.create({type:"basic", iconUrl:"images/buildkite128.png", title:"Buildkite Build Status Plugin Notification", message:"This is an example notification"})
 }
 
 function deletePipelineDataTrigger() {

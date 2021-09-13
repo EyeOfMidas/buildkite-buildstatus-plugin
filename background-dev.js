@@ -51,6 +51,34 @@ function tick() {
         changed.forEach(project => {
           chrome.notifications.create({type:"basic", iconUrl:`images/${project.lastBuildStatus}.png`, title:`${project.name}`, message:`Build ${project.lastBuildStatus} at ${project.lastBuildTime}`})
         })
+
+        let failed = projects.filter(project => {
+          return project.lastBuildStatus != "Success"
+        })
+        chrome.action.getUserSettings().then(userSettings => {
+          if(!userSettings.isOnToolbar) {
+            return
+          }
+          if(failed.length > 0 ) {
+            chrome.action.setIcon({
+              path: {
+                16: "images/buildkite_failure16.png",
+                32: "images/buildkite_failure32.png",
+                48: "images/buildkite_failure48.png",
+                128: "images/buildkite_failure128.png",
+              }
+            });
+          } else {
+            chrome.action.setIcon({
+              path: {
+                16: "images/buildkite16.png",
+                32: "images/buildkite32.png",
+                48: "images/buildkite48.png",
+                128: "images/buildkite128.png",
+              }
+            });
+          }
+        })
       })
     })
   })
