@@ -62,6 +62,9 @@ function constructOptions(buttonColors) {
 
   let debugButton = document.getElementById('debug')
   debugButton.addEventListener("click", debugTrigger)
+
+  let deletePipelineButton = document.getElementById('delete-pipeline-data')
+  deletePipelineButton.addEventListener("click", deletePipelineDataTrigger)
 }
 
 async function rebuildProjectList(organizationSlug, apiAccessToken, pipelineBranch) {
@@ -144,6 +147,7 @@ function getProjectData(projectElement) {
   project['lastBuildStatus'] = projectElement.getAttribute("lastBuildStatus") ?? "undetermined"
   project['activity'] = projectElement.getAttribute("activity")
   project['lastBuildTime'] = projectElement.getAttribute("lastBuildTime")
+  project['webUrl'] = projectElement.getAttribute("webUrl")
   return project
 }
 
@@ -209,6 +213,10 @@ function pollEnabledChange(event) {
 
 function debugTrigger() {
   chrome.notifications.create({type:"basic", iconUrl:"images/get_started48.png", title:"Title thing", message:"This is a message"})
+}
+
+function deletePipelineDataTrigger() {
+  chrome.storage.sync.remove("projectList")
 }
 
 constructOptions(presetButtonColors)

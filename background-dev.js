@@ -83,6 +83,7 @@ function getProjectData(projectElement) {
   project['lastBuildStatus'] = projectElement.getAttribute("lastBuildStatus") ?? "undetermined"
   project['activity'] = projectElement.getAttribute("activity")
   project['lastBuildTime'] = projectElement.getAttribute("lastBuildTime")
+  project['webUrl'] = projectElement.getAttribute("webUrl")
   return project
 }
 
