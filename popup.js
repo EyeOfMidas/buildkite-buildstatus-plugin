@@ -25,7 +25,7 @@ async function rebuildProjectList(projects) {
 
     let statusDiv = document.createElement("div")
     statusDiv.classList.add("project-status")
-    statusDiv.classList.add(`${lastBuildStatus.toLowerCase()}`)
+    statusDiv.classList.add(`${(lastBuildStatus || "undetermined").toLowerCase()}`)
     statusDiv.title = `${lastBuildStatus} ${lastBuildTime}`
 
     let projectNameElement = document.createElement("div")

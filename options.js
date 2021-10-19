@@ -140,18 +140,15 @@ async function getProjects(organizationSlug, apiAccessToken, pipelineBranch) {
 
 function getProjectData(projectElement, organizationSlug, pipelineBranch) {
   let project = {}
-  let branchText = ""
-  if(pipelineBranch) {
-    branchText = ` (${pipelineBranch})`
-  }
-  project['name'] = `${projectElement.getAttribute("name")}${branchText}`
+  project['name'] = projectElement.getAttribute("name")
   project['pipelineSlug'] = projectElement.getAttribute("name").replace(` (${pipelineBranch})`, '')
+  let ccMenuPipelineSlug = project.pipelineSlug.replaceAll('_', '-')
   project['organizationSlug'] = organizationSlug
   project['branch'] = pipelineBranch
   project['lastBuildStatus'] = projectElement.getAttribute("lastBuildStatus") ?? "undetermined"
   project['activity'] = projectElement.getAttribute("activity")
   project['lastBuildTime'] = projectElement.getAttribute("lastBuildTime")
-  project['url'] = `https://cc.buildkite.com/${organizationSlug}/${project.pipelineSlug}.xml?branch=${pipelineBranch}`
+  project['url'] = `https://cc.buildkite.com/${organizationSlug}/${ccMenuPipelineSlug}.xml?branch=${pipelineBranch}`
   project['webUrl'] = projectElement.getAttribute("webUrl")
   return project
 }

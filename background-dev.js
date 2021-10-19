@@ -96,7 +96,7 @@ async function getProjects(projectList, apiAccessToken) {
     let response = await fetch(url)
     if(!response.ok) {
       let jsonResponse = await response.json()
-      throw new Error(`${response.status}: ${jsonResponse.message}`)
+      throw new Error(`${response.status} (${url}): ${jsonResponse.message}`)
     }
     let xmlText = await response.text()
     let data = new DOMParser().parseFromString(xmlText, "text/xml")
@@ -114,12 +114,13 @@ function getProjectData(projectElement, organizationSlug, pipelineBranch) {
   let project = {}
   project['name'] = projectElement.getAttribute("name")
   project['pipelineSlug'] = projectElement.getAttribute("name").replace(` (${pipelineBranch})`, '')
+  let ccMenuPipelineSlug = project.pipelineSlug.replaceAll('_', '-')
   project['organizationSlug'] = organizationSlug
   project['branch'] = pipelineBranch
   project['lastBuildStatus'] = projectElement.getAttribute("lastBuildStatus") ?? "undetermined"
   project['activity'] = projectElement.getAttribute("activity")
   project['lastBuildTime'] = projectElement.getAttribute("lastBuildTime")
-  project['url'] = `https://cc.buildkite.com/${organizationSlug}/${project.pipelineSlug}.xml?branch=${pipelineBranch}`
+  project['url'] = `https://cc.buildkite.com/${organizationSlug}/${ccMenuPipelineSlug}.xml?branch=${pipelineBranch}`
   project['webUrl'] = projectElement.getAttribute("webUrl")
   return project
 }
