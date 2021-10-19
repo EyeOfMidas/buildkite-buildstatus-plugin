@@ -52,8 +52,9 @@ function tick() {
           chrome.notifications.create({type:"basic", iconUrl:`images/${project.lastBuildStatus}.png`, title:`${project.name}`, message:`Build ${project.lastBuildStatus} at ${project.lastBuildTime}`})
         })
 
-        let failed = projects.filter(project => {
-          return project.lastBuildStatus != "Success"
+        let failed = projects
+        .filter(project => {
+          return project.lastBuildStatus != "" && project.lastBuildStatus.toLowerCase() != "success"
         })
         chrome.action.getUserSettings().then(userSettings => {
           if(!userSettings.isOnToolbar) {
